@@ -6,5 +6,5 @@ const filePath = path.join(process.cwd(), "data", "vehicles.json");
 
 export function loadVehicles(): Vehicle[] {
     const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data) as Vehicle[];
+    return JSON.parse(data);
 }
