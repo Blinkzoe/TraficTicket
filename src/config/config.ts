@@ -1,24 +1,14 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-export const config={
-    telegramToken: process.env.TELEGRAM_TOKEN ?? "",
-    chatId: process.env.CHAT_ID ?? "",
+function required(name: string, value: string | undefined): string {
+    if (!value) throw new Error(`Missing env var: ${name}`);
+    return value;
+}
 
-    vehicles: [
-        {
-            plate: process.env.VEHICLE1_PLATE ?? "",
-            serial: process.env.VEHICLE1_SERIAL ?? "",
-            owner: process.env.VEHICLE1_OWNER ?? "",
-            engine: process.env.VEHICLE1_ENGINE ?? "",
-            tag: process.env.VEHICLE1_TAG ?? "",
-        },
-        {
-            plate: process.env.VEHICLE2_PLATE ?? "",
-            serial: process.env.VEHICLE2_SERIAL ?? "",
-            owner: process.env.VEHICLE2_OWNER ?? "",
-            engine: process.env.VEHICLE2_ENGINE ?? "",
-            tag: process.env.VEHICLE2_TAG ?? "",
-        },
-    ],              
+export const config = {
+    telegramToken: required("TELEGRAM_TOKEN", process.env.TELEGRAM_TOKEN),
+    chatId: required("CHAT_ID", process.env.CHAT_ID),
+    headless: process.env.HEADLESS === "true",
+    url: "https://gobiernoenlinea1.jalisco.gob.mx/serviciosVehiculares/"
 };

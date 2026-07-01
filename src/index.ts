@@ -1,12 +1,28 @@
-/* import {chromium} from "playwright";
-async function main() {
-    console.log("Starting browser...");
-    const browser = await chromium.launch({ headless: false });
-    const page = await browser.newPage();
-    await page.goto("https://gobiernoenlinea1.jalisco.gob.mx/serviciosVehiculares/");
-    console.log("Browser started and navigated to Google.");
-    await page.waitForEvent
-    await browser.close();
+import { loadVehicles } from "./utils/vehicles.js";
+import { consultarVehiculo } from "./services/scraper";
+import { sendTelegram } from "./services/telegram.js";
+
+function joinReports(reports: string[]): string {
+    return reports.join("\n\n---\n\n");
 }
-main();
- */
+
+async function main() {
+    console.log("=== INICIO BOT ===");
+
+    const vehicles = loadVehicles();
+
+    const results: string[] = [];
+
+    for (const v of vehicles) {
+        const result = await consultarVehiculo(v);
+        results.push(result);
+    }
+
+    const message =
+        `📊 REPORTE VEHÍCULOS\n\n` +
+        joinReports(results);
+
+    await sendTelegram(message);
+}
+
+main().catch(console.error);
