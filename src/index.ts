@@ -1,5 +1,5 @@
 import { loadVehicles } from "./utils/vehicles.js";
-import { consultarVehiculo } from "./services/scraper";
+import { consultarVehiculo } from "./services/scraper.js";
 import { sendTelegram } from "./services/telegram.js";
 
 function joinReports(reports: string[]): string {

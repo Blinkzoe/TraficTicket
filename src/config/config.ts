@@ -9,6 +9,6 @@ function required(name: string, value: string | undefined): string {
 export const config = {
     telegramToken: required("TELEGRAM_TOKEN", process.env.TELEGRAM_TOKEN),
     chatId: required("CHAT_ID", process.env.CHAT_ID),
-    headless: process.env.HEADLESS === "false",
+    headless: process.env.HEADLESS === "true",
     url: "https://gobiernoenlinea1.jalisco.gob.mx/serviciosVehiculares/"
 };
