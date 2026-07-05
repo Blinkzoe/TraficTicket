@@ -6,7 +6,7 @@ export async function consultarVehiculo(vehicle: Vehicle): Promise<string> {
     let browser: Browser | null = null;
 
     try {
-        console.log(`🚀 Consultando ${vehicle.tag}`);
+        console.log(`🚀 Checking ${vehicle.tag}`);
 
         browser = await chromium.launch({
             headless: config.headless
@@ -14,7 +14,10 @@ export async function consultarVehiculo(vehicle: Vehicle): Promise<string> {
 
         const page = await browser.newPage();
 
-        await page.goto(config.url, { timeout: 60000 });
+        await page.goto(config.url, {
+            waitUntil: "domcontentloaded",
+            timeout: 60000
+        });
 
         await page.fill('//*[@id="placa"]', vehicle.plate);
         await page.fill('//*[@id="numeroSerie"]', vehicle.serial);
@@ -23,33 +26,54 @@ export async function consultarVehiculo(vehicle: Vehicle): Promise<string> {
 
         await page.click('//*[@id="btnConsultar"]');
 
-        await page.waitForTimeout(8000);
+        // SweetAlert2 toast displayed when the vehicle has no outstanding debts
+        const toast = page.locator(".swal2-popup.swal2-toast");
 
-        const el = page.locator('//*[@id="frmAdeudos"]/div[3]');
+        try {
+            await toast.waitFor({
+                state: "visible",
+                timeout: 3000
+            });
 
-        if (await el.isVisible()) {
-            const txt = (await el.innerText()).trim();
+            const message = (await toast.innerText()).trim();
 
-            if (txt.length > 100) {
-                return formatAdeudo(vehicle, txt);
+            if (message.toLowerCase().includes("no tiene adeudos")) {
+                return (
+                    `✅ Vehicle: ${vehicle.tag}\n` +
+                    `📋 Status: No outstanding debts\n` +
+                    `💬 Message: ${message}`
+                );
             }
-
-            return `✅ Limpio: ${vehicle.tag}`;
+        } catch {
+            // The toast may not appear if the system returns a debt report.
+            // Continue checking the debt container.
         }
 
-        return `✅ Limpio: ${vehicle.tag}`;
+        // Container where debt information is displayed
+        const debtContainer = page.locator('//*[@id="frmAdeudos"]/div[3]');
+
+        if (await debtContainer.isVisible()) {
+            const debtDetails = (await debtContainer.innerText()).trim();
+
+            return formatDebtReport(vehicle, debtDetails);
+        }
+
+        return `⚠️ Unable to determine the status of ${vehicle.tag}`;
+
     } catch (err: any) {
-        return `❌ Error ${vehicle.tag}: ${err.message}`;
+        return `❌ Error checking ${vehicle.tag}: ${err.message}`;
     } finally {
-        if (browser) await browser.close();
+        if (browser) {
+            await browser.close();
+        }
     }
 }
 
-function formatAdeudo(vehicle: Vehicle, text: string): string {
+function formatDebtReport(vehicle: Vehicle, debtDetails: string): string {
     return (
-        `⚠️ Adeudo: ${vehicle.tag} (${vehicle.plate})\n\n` +
-        "```" + "\n" +
-        text +
+        `⚠️ Outstanding Debt: ${vehicle.tag} (${vehicle.plate})\n\n` +
+        "```\n" +
+        debtDetails +
         "\n```"
     );
 }
