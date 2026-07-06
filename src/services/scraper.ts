@@ -25,6 +25,7 @@ export async function consultarVehiculo(vehicle: Vehicle): Promise<string> {
         await page.fill('//*[@id="numeroMotor"]', vehicle.engine);
 
         await page.click('//*[@id="btnConsultar"]');
+        //await page.waitForTimeout(2000); 
 
         // SweetAlert2 toast displayed when the vehicle has no outstanding debts
         const toast = page.locator(".swal2-popup.swal2-toast");
